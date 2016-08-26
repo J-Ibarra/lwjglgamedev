@@ -1,6 +1,5 @@
 package com.jcs;
 
-import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFWVidMode;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -15,15 +14,17 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 public class DummyGame extends GameEngine {
 
     public String tittle = "Game Engine";
-    int width = 640;
-    int height = 480;
+    int width = 320 * 2;
+    int height = 240 * 2;
 
+    Transformation transformation;
     Shader shader;
-
     Mesh mesh;
 
     @Override
     public void init() throws Exception {
+        transformation = new Transformation();
+
         shader = new Shader("shaders/shader.vs", "shaders/shader.fs");
 
         float[] vertices = new float[]{
@@ -46,11 +47,14 @@ public class DummyGame extends GameEngine {
 
         mesh = new Mesh(vertices, colours, indices);
 
-        projection = new Matrix4f().orthoSymmetric(width, height, -1, 1).scale(32);
+        transformation.getProjection().orthoSymmetric(width, height, -1, 1);
+        transformation.getView().scale(32);
 
         shader.bind();
         float[] data = new float[16];
-        glUniformMatrix4fv(shader.getUniformLocation("mProjection"), false, projection.get(data));
+        glUniformMatrix4fv(shader.getUniformLocation("mProjection"), false, transformation.getProjection().get(data));
+        glUniformMatrix4fv(shader.getUniformLocation("mView"), false, transformation.getView().get(data));
+        glUniformMatrix4fv(shader.getUniformLocation("mModel"), false, transformation.getModel().get(data));
         shader.unbind();
     }
 
@@ -65,6 +69,11 @@ public class DummyGame extends GameEngine {
         glfwSetWindowSizeCallback(win, ((window, width, height) -> {
             this.width = width;
             this.height = height;
+            transformation.getProjection().identity().setOrthoSymmetric(width, height, -1, 1);
+            shader.bind();
+            float[] data = new float[16];
+            glUniformMatrix4fv(shader.getUniformLocation("mProjection"), false, transformation.getProjection().get(data));
+            shader.unbind();
             glViewport(0, 0, width, height);
         }));
     }
@@ -73,8 +82,6 @@ public class DummyGame extends GameEngine {
     public void update(float delta) throws Exception {
 
     }
-
-    Matrix4f projection;
 
     @Override
     public void render() throws Exception {
