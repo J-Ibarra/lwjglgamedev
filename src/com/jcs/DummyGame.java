@@ -1,11 +1,11 @@
 package com.jcs;
 
+import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFWVidMode;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL20.glDisableVertexAttribArray;
-import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
+import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
@@ -46,6 +46,12 @@ public class DummyGame extends GameEngine {
 
         mesh = new Mesh(vertices, colours, indices);
 
+        projection = new Matrix4f().orthoSymmetric(width, height, -1, 1).scale(32);
+
+        shader.bind();
+        float[] data = new float[16];
+        glUniformMatrix4fv(shader.getUniformLocation("mProjection"), false, projection.get(data));
+        shader.unbind();
     }
 
     @Override
@@ -68,10 +74,13 @@ public class DummyGame extends GameEngine {
 
     }
 
+    Matrix4f projection;
+
     @Override
     public void render() throws Exception {
 
         shader.bind();
+
         // Bind to the VAO
         glBindVertexArray(mesh.getVaoId());
         glEnableVertexAttribArray(0);

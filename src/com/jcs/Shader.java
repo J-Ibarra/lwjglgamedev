@@ -5,6 +5,8 @@ import org.lwjgl.PointerBuffer;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.jcs.utils.IOUtils.ioResourceToByteBuffer;
 import static org.lwjgl.opengl.GL11.GL_FALSE;
@@ -18,10 +20,26 @@ public class Shader {
     private int vsId;
     private int fsId;
 
+    private final Map<String, Integer> uniforms;
+
     public Shader() throws Exception {
         programId = glCreateProgram();
         if (programId == 0) {
             throw new Exception("Could not create Shader");
+        }
+        uniforms = new HashMap<>();
+    }
+
+    public int getUniformLocation(String name) {
+        if (uniforms.containsKey(name))
+            return uniforms.get(name);
+
+        int result = glGetUniformLocation(programId, name);
+        if (result != -1) {
+            uniforms.put(name, result);
+            return result;
+        } else {
+            throw new RuntimeException("Could not find uniform variable ' [" + name + "] '!");
         }
     }
 
