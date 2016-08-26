@@ -67,10 +67,10 @@ public abstract class GameEngine {
                 throw new IllegalStateException("Unable to initialize GLFW");
 
             initGLFW();
+            createCapabilities();
             init();
             config(WINDOW);
 
-            createCapabilities();
             loop();
 
             // Free the window callbacks and destroy the window

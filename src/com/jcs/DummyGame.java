@@ -1,9 +1,16 @@
 package com.jcs;
 
+import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFWVidMode;
 
+import java.nio.FloatBuffer;
+
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.glClearColor;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL15.*;
+import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL30.glBindVertexArray;
+import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 /**
@@ -15,16 +22,36 @@ public class DummyGame extends GameEngine {
     int width = 640;
     int height = 480;
 
+    Shader shader;
+
+    int vaoId, vboId;
 
     @Override
     public void init() throws Exception {
+        shader = new Shader("shaders/shader.vs", "shaders/shader.fs");
 
+        float[] vertices = new float[]{
+                0.0f, 0.5f, 0.0f,
+                -0.5f, -0.5f, 0.0f,
+                0.5f, -0.5f, 0.0f
+        };
+
+
+        vaoId = glGenVertexArrays();
+        glBindVertexArray(vaoId);
+
+        FloatBuffer verticesBuffer = BufferUtils.createFloatBuffer(vertices.length);
+        verticesBuffer.put(vertices).flip();
+        vboId = glGenBuffers();
+        glBindBuffer(GL_ARRAY_BUFFER, vboId);
+        glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
+
+        // Unbind the VBO
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        // Unbind the VAO
+        glBindVertexArray(0);
     }
-
-    private int direction = 0;
-
-    private float color = 0.0f;
-
 
     @Override
     public void config(long win) throws Exception {
@@ -32,35 +59,35 @@ public class DummyGame extends GameEngine {
         glfwSetKeyCallback(win, (window, key, scancode, action, mods) -> {
             if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
                 glfwSetWindowShouldClose(window, true); // We will detect this in our rendering loop
-
-            if (key == GLFW_KEY_UP && action != GLFW_RELEASE)
-                direction = 1;
-
-            if (key == GLFW_KEY_DOWN && action != GLFW_RELEASE)
-                direction = -1;
-
-            if ((key == GLFW_KEY_UP || key == GLFW_KEY_DOWN) && action == GLFW_RELEASE)
-                direction = 0;
-
-
         });
+
+        glfwSetWindowSizeCallback(win, ((window, width, height) -> {
+            this.width = width;
+            this.height = height;
+            glViewport(0, 0, width, height);
+        }));
     }
 
     @Override
     public void update(float delta) throws Exception {
-        color += direction * delta;
-        if (color > 1) {
-            color = 1.0f;
-        } else if (color < 0) {
-            color = 0.0f;
-        }
+
     }
 
     @Override
     public void render() throws Exception {
 
-        glClearColor(color, color, color, 1.0f);
+        shader.bind();
+        // Bind to the VAO
+        glBindVertexArray(vaoId);
+        glEnableVertexAttribArray(0);
+        // Draw the vertices
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
+        // Restore state
+        glDisableVertexAttribArray(0);
+        glBindVertexArray(0);
+
+        shader.unbind();
     }
 
     @Override
@@ -70,7 +97,7 @@ public class DummyGame extends GameEngine {
 
     @Override
     public void destroy() throws Exception {
-
+        shader.cleanup();
     }
 
 
