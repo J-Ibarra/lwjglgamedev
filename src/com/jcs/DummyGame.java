@@ -29,13 +29,15 @@ public class DummyGame extends GameEngine {
         float[] vertices = new float[]{
                 -0.5f, 0.5f, 0.0f,
                 -0.5f, -0.5f, 0.0f,
-                0.5f, 0.5f, 0.0f,
-                0.5f, 0.5f, 0.0f,
-                -0.5f, -0.5f, 0.0f,
                 0.5f, -0.5f, 0.0f,
+                0.5f, 0.5f, 0.0f,
         };
 
-        mesh = new Mesh(vertices);
+        int[] indices = new int[]{
+                0, 1, 3, 3, 1, 2,
+        };
+
+        mesh = new Mesh(vertices, indices);
 
     }
 
@@ -67,7 +69,7 @@ public class DummyGame extends GameEngine {
         glBindVertexArray(mesh.getVaoId());
         glEnableVertexAttribArray(0);
         // Draw the vertices
-        glDrawArrays(GL_TRIANGLES, 0, mesh.getVertexCount());
+        glDrawElements(GL_TRIANGLES, mesh.getVertexCount(), GL_UNSIGNED_INT, 0);
 
         // Restore state
         glDisableVertexAttribArray(0);
