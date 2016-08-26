@@ -65,7 +65,7 @@ public class Shader {
         glUseProgram(0);
     }
 
-    public void cleanup() {
+    public void cleanUp() {
         unbind();
         if (programId != 0) {
             if (vsId != 0) {

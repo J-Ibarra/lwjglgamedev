@@ -1,16 +1,12 @@
 package com.jcs;
 
-import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFWVidMode;
-
-import java.nio.FloatBuffer;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL20.glDisableVertexAttribArray;
+import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
-import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 /**
@@ -24,33 +20,23 @@ public class DummyGame extends GameEngine {
 
     Shader shader;
 
-    int vaoId, vboId;
+    Mesh mesh;
 
     @Override
     public void init() throws Exception {
         shader = new Shader("shaders/shader.vs", "shaders/shader.fs");
 
         float[] vertices = new float[]{
-                0.0f, 0.5f, 0.0f,
+                -0.5f, 0.5f, 0.0f,
                 -0.5f, -0.5f, 0.0f,
-                0.5f, -0.5f, 0.0f
+                0.5f, 0.5f, 0.0f,
+                0.5f, 0.5f, 0.0f,
+                -0.5f, -0.5f, 0.0f,
+                0.5f, -0.5f, 0.0f,
         };
 
+        mesh = new Mesh(vertices);
 
-        vaoId = glGenVertexArrays();
-        glBindVertexArray(vaoId);
-
-        FloatBuffer verticesBuffer = BufferUtils.createFloatBuffer(vertices.length);
-        verticesBuffer.put(vertices).flip();
-        vboId = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, vboId);
-        glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
-
-        // Unbind the VBO
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        // Unbind the VAO
-        glBindVertexArray(0);
     }
 
     @Override
@@ -78,10 +64,10 @@ public class DummyGame extends GameEngine {
 
         shader.bind();
         // Bind to the VAO
-        glBindVertexArray(vaoId);
+        glBindVertexArray(mesh.getVaoId());
         glEnableVertexAttribArray(0);
         // Draw the vertices
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawArrays(GL_TRIANGLES, 0, mesh.getVertexCount());
 
         // Restore state
         glDisableVertexAttribArray(0);
@@ -97,7 +83,8 @@ public class DummyGame extends GameEngine {
 
     @Override
     public void destroy() throws Exception {
-        shader.cleanup();
+        shader.cleanUp();
+        mesh.cleanUp();
     }
 
 
