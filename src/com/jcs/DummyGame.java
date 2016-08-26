@@ -3,6 +3,7 @@ package com.jcs;
 import org.lwjgl.glfw.GLFWVidMode;
 
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.glClearColor;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 /**
@@ -20,6 +21,10 @@ public class DummyGame extends GameEngine {
 
     }
 
+    private int direction = 0;
+
+    private float color = 0.0f;
+
 
     @Override
     public void config(long win) throws Exception {
@@ -27,17 +32,34 @@ public class DummyGame extends GameEngine {
         glfwSetKeyCallback(win, (window, key, scancode, action, mods) -> {
             if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
                 glfwSetWindowShouldClose(window, true); // We will detect this in our rendering loop
+
+            if (key == GLFW_KEY_UP && action != GLFW_RELEASE)
+                direction = 1;
+
+            if (key == GLFW_KEY_DOWN && action != GLFW_RELEASE)
+                direction = -1;
+
+            if ((key == GLFW_KEY_UP || key == GLFW_KEY_DOWN) && action == GLFW_RELEASE)
+                direction = 0;
+
+
         });
     }
 
     @Override
     public void update(float delta) throws Exception {
-
+        color += direction * delta;
+        if (color > 1) {
+            color = 1.0f;
+        } else if (color < 0) {
+            color = 0.0f;
+        }
     }
 
     @Override
     public void render() throws Exception {
 
+        glClearColor(color, color, color, 1.0f);
 
     }
 
