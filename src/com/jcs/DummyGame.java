@@ -14,8 +14,8 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 public class DummyGame extends GameEngine {
 
     public String tittle = "Game Engine";
-    int width = 320 * 2;
-    int height = 240 * 2;
+    int width = 12 * 3 * 16;
+    int height = 10 * 3 * 16;
 
     Transformation transformation;
     Shader shader;
@@ -28,10 +28,10 @@ public class DummyGame extends GameEngine {
         shader = new Shader("shaders/shader.vs", "shaders/shader.fs");
 
         float[] vertices = new float[]{
-                -0.5f, 0.5f, 0.0f,
-                -0.5f, -0.5f, 0.0f,
-                0.5f, -0.5f, 0.0f,
-                0.5f, 0.5f, 0.0f,
+                -0.5f, 0.5f, -0.5f,
+                -0.5f, -0.5f, -0.5f,
+                0.5f, -0.5f, -0.5f,
+                0.5f, 0.5f, -0.5f,
         };
 
         int[] indices = new int[]{
@@ -47,8 +47,9 @@ public class DummyGame extends GameEngine {
 
         mesh = new Mesh(vertices, colours, indices);
 
-        transformation.getProjection().orthoSymmetric(width, height, -1, 1);
-        transformation.getView().scale(32);
+        transformation.getProjection().orthoSymmetric(12, 10, -1, 1);
+        //transformation.getProjection().perspective(60, (float) width / (float) height, 0.1f, 1000.0f);
+        //transformation.getView().translate(0.0f, 0.0f, -3.0f);
 
         shader.bind();
         float[] data = new float[16];
@@ -69,7 +70,7 @@ public class DummyGame extends GameEngine {
         glfwSetWindowSizeCallback(win, ((window, width, height) -> {
             this.width = width;
             this.height = height;
-            transformation.getProjection().identity().setOrthoSymmetric(width, height, -1, 1);
+            transformation.getProjection().identity().setOrthoSymmetric(width / (3 * 16), height / (3 * 16), -1, 1);
             shader.bind();
             float[] data = new float[16];
             glUniformMatrix4fv(shader.getUniformLocation("mProjection"), false, transformation.getProjection().get(data));
